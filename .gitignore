@@ -1,0 +1,9 @@
+/php/node_modules
+/php/public/hot
+/php/public/storage
+/php/storage/*.key
+/php/vendor
+/php/.env
+/php/.phpunit.result.cache
+/php/npm-debug.log
+/php/yarn-error.log

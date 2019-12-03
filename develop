@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+# Set env vars for dev or CI
+export APP_PORT=${APP_PORT:-80}
+export DB_PORT=${DB_PORT:-3306}
+export DB_ROOT_PASS=${DB_ROOT_PASS:-secret}
+export DB_NAME=${DB_NAME:-homestead}
+export DB_USER=${DB_USER:-homestead}
+export DB_PASS=${DB_PASS:-secret}
+
+COMPOSE="docker-compose -f docker-compose-dev.yml"
+
+if [ $# -gt 0 ]; then
+    if [ "$1" == "artisan" ]; then
+        shift 1
+        $COMPOSE run --rm \
+            -w /app \
+            php \
+            php artisan "$@"
+    elif [ "$1" == "composer" ]; then
+        shift 1
+        $COMPOSE run --rm \
+            -w /app \
+            php \
+            composer "$@"
+    elif [ "$1" == "phpunit" ]; then
+        shift 1
+        $COMPOSE run --rm \
+            -w /app \
+            php \
+            phpdbg -qrr ./php/vendor/bin/phpunit --coverage-html code-coverage "$@"
+#    elif [ "$1" == "npm" ]; then
+#        shift 1
+#        $COMPOSE run --rm \
+#            -w /app \
+#            node \
+#            npm "$@"
+#    elif [ "$1" == "pecl" ]; then
+#        shift 1
+#        $COMPOSE run --rm \
+#            -w /app \
+#            php \
+#            pecl "$@"
+#    elif [ "$1" == "tail" ]; then
+#        shift 1
+#        $COMPOSE run --rm \
+#            -w /app \
+#            php \
+#            tail "$@"
+#    elif [ "$1" == "php" ]; then
+#        shift 1
+#        $COMPOSE run --rm \
+#            -w /app \
+#            php \
+#            php "$@"
+#    elif [ "$1" == "gulp" ]; then
+#        shift 1
+#        $COMPOSE run --rm \
+#            -w /app \
+#            node \
+#            ./node_modules/.bin/gulp "$@"
+    else
+        $COMPOSE "$@"
+    fi
+else
+    $COMPOSE ps
+fi
