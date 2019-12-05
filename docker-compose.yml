@@ -5,18 +5,30 @@ services:
     image: nginx:1.12
     ports:
       - "80:80"
+      - "443:80"
     volumes:
       - ./php/:/app
-      - ./nginx/site.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/site-dev.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - owasp-network
 
   php:
     build:
       context: ./php/
-      args:
-        arg: 1
+    volumes:
+      - ./php/:/app
+    networks:
+      - owasp-network
 
   redis:
     image: redis:latest
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    networks:
+      - owasp-network
 
+networks:
+  owasp-network:
+    external:
+      name: owasp-network

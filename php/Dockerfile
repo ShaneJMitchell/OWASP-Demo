@@ -11,8 +11,6 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . /app
 
-RUN if [ $arg -eq 1 ] ; then chown -R www-data:www-data /app \
-    && cp /app/.env.example /app/.env \
+RUN chown -R www-data:www-data /app \
     && php /usr/bin/composer install \
-    && php artisan key:generate \
-    && phpdbg -qrr ./vendor/bin/phpunit --coverage-html code-coverage ; fi
+    && php artisan key:generate

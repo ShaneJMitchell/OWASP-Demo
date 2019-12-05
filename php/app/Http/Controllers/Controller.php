@@ -25,6 +25,7 @@ class Controller extends BaseController
 
     /**
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @throws \Exception
      */
     public function boxes()
     {
@@ -45,6 +46,28 @@ class Controller extends BaseController
     }
 
     /**
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function boxItemsExposed(Request $request, $id)
+    {
+        return response()->json(DB::select(DB::raw("SELECT i.* from items i JOIN box_item bi on i.id = bi.item_id WHERE bi.box_id = " . $id)));
+    }
+
+    /**
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function boxItems(Request $request, $id)
+    {
+        if (!intval($id)) return response()->json('Invalid Box Id Provided', 422);
+
+        return response()->json(DB::select(DB::raw("SELECT i.* from items i JOIN box_item bi on i.id = bi.item_id WHERE bi.box_id = " . $id)));
+    }
+
+    /**
      * Function designed to expose an input to SQL injection
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -53,24 +76,7 @@ class Controller extends BaseController
     {
         $input = $request->input('search');
 
-        $boxes = DB::select(DB::raw("SELECT b.id FROM boxes b WHERE b.name LIKE '%" . $input . "%'"));
-        $items = DB::select(DB::raw("SELECT i.id FROM items i WHERE i.name LIKE '%" . $input . "%' OR i.description LIKE '%" . $input . "%'"));
-
-        $boxIds = [];
-        foreach ($boxes as $box) {
-            if (!in_array($box->id, $boxIds)) $boxIds[] = $box->id;
-        }
-        $itemIds = [];
-        foreach ($items as $item) {
-            if (!in_array($item->id, $itemIds)) $itemIds[] = $item->id;
-        }
-
-        $boxes = DB::select(DB::raw("SELECT b.* FROM boxes b LEFT JOIN box_item bi on b.id = bi.box_id WHERE b.id IN (" . implode(',', $boxIds) . ") OR bi.item_id IN (" . implode(',', $itemIds) . ") ORDER BY b.year, b.month"));
-
-        foreach ($boxes as $key => $box) {
-            $box->items = DB::select(DB::raw("SELECT i.* from items i JOIN box_item bi on i.id = bi.item_id WHERE bi.box_id = " . $box->id));
-            $boxes[$key] = $box;
-        }
+        $boxes = DB::select(DB::raw("SELECT b.* FROM boxes b JOIN box_item bi on b.id = bi.box_id JOIN items i on bi.item_id = i.id WHERE b.name LIKE '%" . $input . "%' OR  i.name LIKE '%" . $input . "%' OR i.description LIKE '%" . $input . "%'"));
 
         return response()->json($boxes);
     }
@@ -84,15 +90,6 @@ class Controller extends BaseController
         $input = $request->input('search');
 
         $boxes = DB::table('boxes')
-            ->where('boxes.name', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
-            ->get('boxes.id');
-
-        $items = DB::table('items')
-            ->orWhere('items.name', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
-            ->orWhere('items.description', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
-            ->get('items.id');
-return response()->json([$boxes, $items]);
-        $boxes = DB::table('boxes')
             ->join('box_item', 'boxes.id', '=', 'box_item.box_id')
             ->join('items', 'box_item.item_id', '=', 'items.id')
             ->where('boxes.name', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
@@ -101,10 +98,7 @@ return response()->json([$boxes, $items]);
             ->orderBy('boxes.year')
             ->orderBy('boxes.month')
             ->get();
-        foreach ($boxes as $key => $box) {
-            $box->items = DB::select(DB::raw("SELECT i.* from items i JOIN box_item bi on i.id = bi.item_id WHERE bi.box_id = " . $box->id));
-            $boxes[$key] = $box;
-        }
+
         return response()->json($boxes);
     }
 }
