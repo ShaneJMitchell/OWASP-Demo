@@ -36,3 +36,4 @@ Route::post('/payment_info', 'HomeController@updatePaymentInfo')->name('update_p
 Route::post('/admin/item/create', 'AdminController@createItem')->name('create_item');
 Route::post('/admin/item/update', 'AdminController@updateItem')->name('update_item');
 Route::post('/admin/box/create', 'AdminController@createBox')->name('create_box');
+Route::post('/admin/box/update', 'AdminController@updateBox')->name('update_box');

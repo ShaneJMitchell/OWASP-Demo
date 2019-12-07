@@ -9,6 +9,9 @@ use App\PaymentMethod;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
@@ -60,8 +63,18 @@ class AdminController extends Controller
             'month' => 'integer|digitsBetween:1,2'
         ]);
 
+        $existing = DB::table('boxes')
+            ->where([
+                ['year', '=', $request->input('year')],
+                ['month', '=', $request->input('month')]
+            ])->get()->count();
+
+        if ($existing) {
+            return redirect()->back()->withErrors(['name' => 'Box already exists for this month/year'])->withInput();
+        }
 
         $box = new Box();
+
         $box->name = $request->input('name');
         $box->month = $request->input('month');
         $box->year = $request->input('year');
@@ -86,26 +99,46 @@ class AdminController extends Controller
             'id' => 'required|integer',
             'items' => 'array|nullable',
             'name' => 'required|string|max:255',
-            'year' => 'required|digits:4',
-            'month' => 'integer|digitsBetween:1,2',
-            'sent' => 'required|date|nullable',
+//            'year' => 'required|digits:4',
+//            'month' => 'integer|digitsBetween:1,2',
+//            'sent' => 'required|date|nullable',
         ]);
+
+        $existing = DB::table('boxes')
+            ->where([
+                ['year', '=', $request->input('year')],
+                ['month', '=', $request->input('month')],
+                ['id', '!=', $request->input('id')]
+            ])->get()->count();
+
+        if ($existing) {
+            return redirect()->back()->withErrors(['name' => 'Box already exists for this month/year'])->withInput();
+        }
 
         $box = Box::find($request->input('id'));
 
         $box->name = $request->input('name');
-        $box->name = $request->input('year');
-        $box->name = $request->input('month');
-        $box->name = $request->input('sent');
+//        $box->name = $request->input('year');
+//        $box->name = $request->input('month');
+//        $box->name = $request->input('sent');
 
         $box->save();
 
         if ($items = $request->input('items')) {
+            $boxItems = $box->items;
+
             $items = Item::find($request->input('items'));
-            $box->items()->attach($items);
+
+            foreach ($boxItems as $item) {
+                if (!in_array($item, $items->toArray())) $box->items()->detach($item);
+            }
+
+            foreach ($items as $item) {
+                if (!in_array($item, $boxItems->toArray())) $box->items()->attach($item);
+            }
         }
 
-        return redirect()->route('create_boxes');
+        return redirect()->route('manage_boxes');
     }
 
     /**
