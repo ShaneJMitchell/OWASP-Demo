@@ -104,16 +104,16 @@ class AdminController extends Controller
 //            'sent' => 'required|date|nullable',
         ]);
 
-        $existing = DB::table('boxes')
-            ->where([
-                ['year', '=', $request->input('year')],
-                ['month', '=', $request->input('month')],
-                ['id', '!=', $request->input('id')]
-            ])->get()->count();
-
-        if ($existing) {
-            return redirect()->back()->withErrors(['name' => 'Box already exists for this month/year'])->withInput();
-        }
+//        $existing = DB::table('boxes')
+//            ->where([
+//                ['year', '=', $request->input('year')],
+//                ['month', '=', $request->input('month')],
+//                ['id', '!=', $request->input('id')]
+//            ])->get()->count();
+//
+//        if ($existing) {
+//            return redirect()->back()->withErrors(['name' => 'Box already exists for this month/year'])->withInput();
+//        }
 
         $box = Box::find($request->input('id'));
 

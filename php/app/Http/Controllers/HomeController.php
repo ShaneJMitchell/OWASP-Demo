@@ -92,7 +92,7 @@ class HomeController extends Controller
 
         $user->address->save();
 
-        return redirect('profile');
+        return redirect('profile/' . Auth::user()->id);
     }
 
     /**
@@ -149,6 +149,6 @@ class HomeController extends Controller
 
         $card->save();
 
-        return redirect('payment_info');
+        return redirect('payment_info/' . Auth::user()->id);
     }
 }
