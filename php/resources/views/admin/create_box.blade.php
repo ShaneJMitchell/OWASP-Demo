@@ -8,7 +8,7 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="text-left col-6">
-                                Create Boxe
+                                Create Box
                             </div>
                         </div>
                     </div>
