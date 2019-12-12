@@ -76,7 +76,7 @@ class Controller extends BaseController
     {
         $input = $request->input('search');
 
-        $boxes = DB::select(DB::raw("SELECT b.* FROM boxes b JOIN box_item bi on b.id = bi.box_id JOIN items i on bi.item_id = i.id WHERE b.name LIKE '%" . $input . "%' OR  i.name LIKE '%" . $input . "%' OR i.description LIKE '%" . $input . "%'"));
+        $boxes = DB::select(DB::raw("SELECT b.* FROM boxes b JOIN box_item bi on b.id = bi.box_id JOIN items i on bi.item_id = i.id WHERE b.name LIKE '%" . $input . "%' OR  i.name LIKE '%" . $input . "%' OR i.description LIKE '%" . $input . "%' GROUP BY b.id"));
 
         return response()->json($boxes);
     }
@@ -97,6 +97,7 @@ class Controller extends BaseController
             ->orWhere('items.description', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
             ->orderBy('boxes.year')
             ->orderBy('boxes.month')
+            ->groupBy('boxes.id')
             ->get();
 
         return response()->json($boxes);
