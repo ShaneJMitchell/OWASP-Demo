@@ -22,10 +22,10 @@ Route::post('/search', 'Controller@searchExposed')->name('search');
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
-Route::get('/profile/{id}', 'HomeController@profileById')->name('profile');
-//Route::get('/profile', 'HomeController@profile')->name('profile');
-Route::get('/payment_info/{id}', 'HomeController@paymentInfoById')->name('payment_info');
-//Route::get('/payment_info', 'HomeController@paymentInfo')->name('payment_info');
+//Route::get('/profile/{id}', 'HomeController@profileById')->name('profile');
+Route::get('/profile', 'HomeController@profile')->name('profile');
+//Route::get('/payment_info/{id}', 'HomeController@paymentInfoById')->name('payment_info');
+Route::get('/payment_info', 'HomeController@paymentInfo')->name('payment_info');
 Route::get('/admin/items', 'AdminController@items')->name('items');
 Route::get('/admin/create_item', 'AdminController@item')->name('item');
 Route::get('/admin/boxes', 'AdminController@boxes')->name('manage_boxes');
