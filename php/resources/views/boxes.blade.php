@@ -38,6 +38,7 @@
 
         $('#boxSearch').submit(function (e) {
           e.preventDefault();
+          boxes = []
 
           if ($('#search').val().length > 2) {
             $('[data-item="box"]').remove();
