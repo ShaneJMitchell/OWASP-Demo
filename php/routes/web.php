@@ -13,8 +13,8 @@
 
 Route::get('/', 'Controller@home')->name('home');
 Route::get('/boxes', 'Controller@boxes')->name('boxes');
-Route::get('/box/{id}/items', 'Controller@boxItemsExposed')->name('box_items');
-//Route::get('/box/{id}/items', 'Controller@boxItems')->name('box_items')->where(['id' => '[0-9]+']);
+//Route::get('/box/{id}/items', 'Controller@boxItemsExposed')->name('box_items');
+Route::get('/box/{id}/items', 'Controller@boxItems')->name('box_items')->where(['id' => '[0-9]+']);
 
 Route::post('/search', 'Controller@searchExposed')->name('search');
 //Route::post('/search', 'Controller@search')->name('search');

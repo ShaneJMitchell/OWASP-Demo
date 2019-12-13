@@ -76,7 +76,7 @@ class Controller extends BaseController
     {
         $input = $request->input('search');
 
-        $boxes = DB::select(DB::raw("SELECT b.* FROM boxes b JOIN box_item bi on b.id = bi.box_id JOIN items i on bi.item_id = i.id WHERE b.name LIKE '%" . $input . "%' OR  i.name LIKE '%" . $input . "%' OR i.description LIKE '%" . $input . "%' GROUP BY b.id"));
+        $boxes = DB::select(DB::raw("SELECT b.* FROM boxes b JOIN box_item bi on b.id = bi.box_id JOIN items i on bi.item_id = i.id WHERE b.name LIKE '%" . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . "%' OR  i.name LIKE '%" . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . "%' OR i.description LIKE '%" . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . "%' GROUP BY b.id"));
 
         return response()->json($boxes);
     }
@@ -89,16 +89,25 @@ class Controller extends BaseController
     {
         $input = $request->input('search');
 
-        $boxes = DB::table('boxes')
-            ->join('box_item', 'boxes.id', '=', 'box_item.box_id')
-            ->join('items', 'box_item.item_id', '=', 'items.id')
-            ->where('boxes.name', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
-            ->orWhere('items.name', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
+        $itemBoxes = [];
+        $items = Item::query()
+            ->where('items.name', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
             ->orWhere('items.description', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
+            ->get();
+        /** @var Item $item */
+        foreach ($items as $item) {
+            foreach ($item->boxes()->get() as $box) {
+                if (!in_array($box->id, $itemBoxes)) $itemBoxes[] = $box->id;
+            }
+        }
+
+        $boxes = DB::table('boxes')
+            ->where('boxes.name', 'LIKE', '%' . str_replace(['%', '_', "'"], ['\%', '\_', "\'"], $input) . '%')
+            ->orWhere('boxes.id', 'IN', '(' . implode(',', $itemBoxes) . ')')
             ->orderBy('boxes.year')
             ->orderBy('boxes.month')
-            ->groupBy('boxes.id')
             ->get();
+
 
         return response()->json($boxes);
     }
